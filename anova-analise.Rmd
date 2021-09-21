@@ -1,0 +1,78 @@
+
+
+#### Tabela da Análise de Variância
+```{r anova}
+fit <- lm(model, data = datb) 
+summary(fit)
+car::Anova(fit)
+```
+
+
+#### Boxplot 
+```{r explora}
+boxplot(datb[[resp]] ~ datb[[trat]], data = datb, las = 2, 
+        xlab = "tratamentos", ylab = "resposta")
+tapply(datb[[resp]], datb[[trat]], FUN = mean) # médias dos tratamentos
+tapply(datb[[resp]], datb[[trat]], FUN = sd) # desvio-padrão dos tratamentos
+```
+
+
+#### Coeficiente de variação
+```{r cv}
+sjstats::cv(fit)
+```
+
+
+### Condições para ANOVA
+ 
+#### Verificar o pressuposto da normalidade dos resíduos
+```{r norm }
+shapiro.test(residuals(fit)) # p-valor > 0.05
+qqnorm(residuals(fit))
+qqline(residuals(fit)) # ajuste à reta
+moments::kurtosis(residuals(fit)) # -3 a 3
+moments::skewness(residuals(fit)) # 0 a 3
+hist(residuals(fit)) # simetria
+stem(resid(fit)) # simetria
+boxplot(residuals(fit)) # simetria
+```
+
+#### Valores discrepantes  
+Observações com resíduos mais distantes da média são candidatas a outliers  
+```{r discrep}
+residuals(fit)[order(abs(residuals(fit)), decreasing = TRUE)[1:5]] #resíduo discrepante
+insight::get_response(fit)[order(abs(residuals(fit)), decreasing = TRUE)[1:5]] #observação discrepante
+```
+
+
+#### Verificar o pressuposto da homocedasticidade
+
+```{r homoc}
+max(tapply(datb[[resp]], datb[[trat]], FUN=sd))/min(tapply(datb[[resp]], datb[[trat]], FUN=sd)) #razão sd < 3
+bartlett.test(residuals(fit)~factor(datb[[trat]])) # p-valor > 0.05
+car::leveneTest(residuals(fit)~factor(datb[[trat]])) # p-valor > 0.05
+lmtest::bptest(fit) # p-valor > 0.05
+plot(fit,1) # resíduos vs ajustados
+boxplot(residuals(fit) ~ factor(datb[[trat]]), las = 2, range = 0,
+        xlab = "", ylab = "residuals") # boxplot condicional dos resíduos
+```
+
+
+#### Teste de Tukey
+```{r tukey}
+library(emmeans)
+tk <- emmeans(fit, trat, contr = "tukey")
+summary(tk$contrasts, infer = TRUE, type = "response")
+multcomp::cld(tk$emmeans, Letters = letters, reversed = TRUE, type = "response")
+plot(tk$emmeans, comparisons = TRUE, type = "response")
+pwpp(emmeans(fit, trat), method = "tukey", type = "response")
+```
+
+
+#### Teste de Dunnett
+```{r dunnett}
+library(emmeans)
+dn <- emmeans(fit, trat, contr = "dunnett")
+summary(dn$contrasts, infer = TRUE, type = "response")
+summary(dn$emmeans, type = "response")
+```

@@ -1,0 +1,56 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r include = FALSE}
+rm(list = ls())
+options(knitr.duplicate.label = "allow")
+```
+
+# Análise de Variância
+
+[download do script anova-diam.Rmd](anova-diam.Rmd)  
+[download do script anova-analise.Rmd](anova-analise.Rmd)  
+
+
+Análise do diâmetro no último dia do fungo *Alternaria* submetida a tratamentos com diferentes espécies de *Trichoderma.*  
+TEST = testemunha  
+T1 = Brunópolis  
+T2 = Comercial  
+T3 = Rio do Sul  
+T4 = São Paulo  
+T5 = Curitibanos  
+As cidades são os locais de origem/isolamento do Trichoderma.
+
+[trichoderma.xlsx](trichoderma.xlsx)
+
+#### Organizar o arquivo e substituir os nomes conforme abaixo  
+file: nome do arquivo em formato Excel  
+sheet:planilha dentro do arquivo acima  
+skip: número de linhas na planilha a evitar
+trat: nome do tratamento  
+resp: nome da variável resposta  
+model: modelo da ANOVA  
+datb: importação do arquivo  
+
+```{r data}
+rm(list = ls())
+
+file <- "trichoderma.xlsx"
+sheet <- "alt"
+skip <- 0
+trat <- "tratamento"
+rep <- "rep"
+resp <- "d10"
+model <- d10 ~ factor(tratamento) 
+datb <- readxl::read_excel(file, sheet = sheet, skip = skip)[-3:-12]
+colnames(datb)[3] <- "d10"
+knitr::kable(tidyr::spread(datb, key = rep, value = resp))
+```
+
+
+```{r child="anova-analise.Rmd"}
+```
+

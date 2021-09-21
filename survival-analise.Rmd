@@ -1,0 +1,88 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Análise de Sobrevivência
+
+[download do script survival-analise.Rmd](survival-analise.Rmd)  
+[download do script data-survival.R](data-survival.R)  
+[download do script save-survival.R](save-survival.R)  
+
+
+Análise da germinação de escleródios de *S. rolfsii* submetidos a tratamentos com óleo essencial de Cravo.
+
+TEST030 = testemunha imerso por  30 minutos  
+TEST090 = testemunha imerso por  90 minutos  
+TEST180 = testemunha imerso por 180 minutos  
+CR030 = óleo essencial de cravo (5000 ppm imerso por  30 minutos  
+CR090 = óleo essencial de cravo (5000 ppm imerso por  90 minutos  
+CR180 = óleo essencial de cravo (5000 ppm imerso por 180 minutos  
+
+[SR-CR.xlsx](SR-CR.xlsx)
+
+#### Organizar o arquivo e substituir os nomes conforme abaixo  
+file: nome do arquivo em formato Excel  
+sheet:planilha dentro do arquivo acima  
+trat: nome do tratamento  
+skip: número de linhas na planilha a evitar  
+ini: coluna em que estão os tratamentos  
+mid: Colunas em que estão as repetições e o número de indivíduos  
+end: colunas em que estão as datas  
+cen: coluna em que está a censura  
+dats: importação do arquivo  
+
+```{r data}
+rm(list = ls())
+
+file <- "SR-CR.xlsx"
+sheet <- "dados"
+trat <- "tratamento"
+skip <- 2
+
+ini <- 1
+mid <- 2:3
+end <- 4:16
+cen <- 17
+
+data1 <- readxl::read_excel(file, sheet = sheet, skip = skip)
+source("data-survival.R")
+dats <- data.sobrev(data1, ini, mid, end, cen)
+```
+
+#### Curvas de sobrevivência de Kaplan-Meier
+```{r}
+library(survival)
+fits <- survfit(Surv(tm, cs) ~ dats[[trat]], data = dats)
+fits
+summary(fits, censor = T)
+survminer::ggsurvplot(fits)
+```
+
+
+#### Comparação entre as curvas de sobrevivência
+Comparação pareada (pairwise) entre duas curvas de sobrevivência utilizando o teste G-rho (logrank test)  
+
+```{r}
+cb <- combn(length(unique(dats[[trat]])), 2)
+s <- list()
+
+for (i in 1:dim(cb)[2]) {
+  dats.subset <-
+    subset(dats, dats[[trat]] == unique(dats[[trat]])[cb[, i][1]] |
+             dats[[trat]] == unique(dats[[trat]])[cb[, i][2]])
+  s[[i]] <-
+    survdiff(Surv(tm, cs) ~ dats.subset[[trat]], data = dats.subset)
+}
+s
+```
+
+
+#### Salvar planilha para fazer os gráficos
+```{r}
+source("save-survival.R")
+save_survival(fits, file)
+```
+
+

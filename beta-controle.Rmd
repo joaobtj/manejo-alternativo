@@ -1,0 +1,61 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r include = FALSE}
+rm(list = ls())
+options(knitr.duplicate.label = "allow")
+```
+
+# Análise Modelo Beta
+
+[download do script beta-controle.Rmd](beta-controle.Rmd)  
+[download do script beta-analise.Rmd](beta-analise.Rmd)  
+
+Análise da incidência de *Alternaria* em sementes de cebola submetidas a diferentes temperaturas.
+
+_Test = testemunha: temperatura ambiente  
+_Quim = tratamento químico com fungicida  
+40 = 40°C  
+50 = 50°C  
+60 = 60°C  
+70 = 70°C  
+
+[termoterapia.xlsx](termoterapia.xlsx)
+
+#### Organizar o arquivo e substituir os nomes conforme abaixo  
+file: nome do arquivo em formato Excel  
+sheet:planilha dentro do arquivo acima  
+skip: número de linhas na planilha a evitar
+trat: nome do tratamento  
+rep: repetição
+resp: nome da variável resposta  
+weights: ponderador das proporções  
+model: modelo da análise Beta  
+datb: importação do arquivo  
+
+```{r data}
+rm(list = ls())
+
+file <- "termoterapia.xlsx"
+sheet <- "term_controle"
+skip <- 0
+trat <- "tratamento"
+rep <- "rep"
+resp <- "sgcf.p"
+weights <- "sg"
+model <- sgcf.p ~ factor(tratamento) 
+datb <- readxl::read_excel(file, sheet = sheet, skip = skip)
+knitr::kable(tidyr::spread(datb[,c(1,2,10)], key = rep, value = resp),
+             caption = "Dados originais") #tabela dos dados
+datb$sgcf.p <- (datb$sgcf.p * (length(datb$sgcf.p)-1) + 0.5)/length(datb$sgcf.p) #transformação para a análise do modelo Beta
+knitr::kable(tidyr::spread(datb[,c(1,2,10)], key = rep, value = resp),
+             caption = "Dados transformados") #tabela dos dados
+```
+
+
+```{r child="beta-analise.Rmd"}
+```
+

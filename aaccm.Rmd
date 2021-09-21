@@ -1,0 +1,7 @@
+
+```{r}
+datb <- readxl::read_excel("trichoderma.xlsx", sheet = "alt", skip = 0)
+aaccm.alt <- aaccm.calc(datb, name = "aaccm.alt", t.end = 10)
+knitr::kable(aaccm.alt)
+
+```

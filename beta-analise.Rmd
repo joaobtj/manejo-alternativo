@@ -1,0 +1,39 @@
+
+
+#### Análise Modelo Beta
+```{r beta}
+library(betareg)
+fit <- betareg(model, data=datb, weights = datb[[weights]])
+summary(fit)
+car::Anova(fit, test="F")
+lmtest::lrtest(fit)
+```
+
+
+#### Boxplot 
+```{r explora}
+boxplot(datb[[resp]] ~ datb[[trat]], data = datb, las = 2, 
+        xlab = "Tratamentos", 
+        ylab = "Resposta"
+        )
+tapply(datb[[resp]], datb[[trat]], FUN = mean) # médias dos tratamentos
+```
+
+
+#### Teste de Tukey
+```{r tukey}
+library(emmeans)
+tk <- emmeans(fit, trat, contr = "tukey")
+summary(tk$contrasts, infer = TRUE, type = "response")
+multcomp::cld(tk$emmeans, Letters = letters, reversed = TRUE, type = "response")
+plot(tk$emmeans, comparisons = TRUE, type = "response")
+pwpp(emmeans(fit, trat), method = "tukey", type = "response")
+```
+
+#### Teste de Dunnett
+```{r dunnett}
+library(emmeans)
+dn <- emmeans(fit, trat, contr = "dunnett")
+summary(dn$contrasts, infer = TRUE, type = "response")
+summary(dn$emmeans, type = "response")
+```

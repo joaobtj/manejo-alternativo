@@ -1,0 +1,61 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+# Análise Modelo Beta
+
+[download do script beta-germin.Rmd](beta-germin.Rmd)  
+[download do script beta-analise.Rmd](beta-analise.Rmd)    
+
+Análise da germinação de sementes de cebola submetidas as diferentes temperaturas.
+
+_TEST = testemunha: temperatura ambiente  
+40 = 40°C  
+50 = 50°C  
+60 = 60°C  
+70 = 70°C  
+
+[termoterapia.xlsx](termoterapia.xlsx)
+
+#### Organizar o arquivo e substituir os nomes conforme abaixo  
+file: nome do arquivo em formato Excel  
+sheet:planilha dentro do arquivo acima  
+skip: número de linhas na planilha a evitar
+trat: nome do tratamento  
+rep: repetição
+resp: nome da variável resposta  
+weights: ponderador das proporções  
+model: modelo da análise Beta  
+datb: importação do arquivo  
+
+```{r data}
+rm(list = ls())
+
+file <- "termoterapia.xlsx"
+sheet <- "term_germin"
+skip <- 0
+trat <- "tratamento"
+rep <- "rep"
+resp <- "d14"
+weights <- "sg"
+model <- d14 ~ factor(tratamento) 
+datb <- readxl::read_excel(file, sheet = sheet, skip = skip)
+```
+
+
+#### Análise GLM Beta
+```{r glm beta}
+library(betareg)
+fit <- betareg(model, data=datb)
+summary(fit)
+car::Anova(fit, test="F")
+lmtest::lrtest(fit)
+```
+
+
+```{r child="beta-analise.Rmd"}
+```
+
