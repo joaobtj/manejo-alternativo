@@ -37,7 +37,7 @@ save_survival <- function(fits, file) {
         fixed = TRUE
       )
     ))[-1])
-  openxlsx::write.xlsx(surv.s, paste0("save-", file))
+  openxlsx::write.xlsx(surv.s, paste0("save-", file), overwrite = TRUE)
 }
 
 
