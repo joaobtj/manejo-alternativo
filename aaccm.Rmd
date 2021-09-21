@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 
 ```{r}
 datb <- readxl::read_excel("trichoderma.xlsx", sheet = "alt", skip = 0)
